@@ -56,14 +56,20 @@ flowchart TD
     Y --> K
 
 
-    %% === STYLING ===
-    classDef startEnd fill:#f44336,color:#ffffff,stroke:#b71c1c,stroke-width:2px;
-    classDef action fill:#4caf50,color:#ffffff,stroke:#1b5e20,stroke-width:1.5px;
-    classDef decision fill:#2196f3,color:#ffffff,stroke:#0d47a1,stroke-width:2px;
-    classDef error fill:#9c27b0,color:#ffffff,stroke:#4a148c,stroke-width:1.5px;
+    %% ===== PREMIUM THEME =====
 
-    class A startEnd
+    classDef start fill:#ff6b6b,color:#ffffff,stroke:#8b1e3f,stroke-width:3px;
+    classDef action fill:#6c63ff,color:#ffffff,stroke:#3f3d9e,stroke-width:2px;
+    classDef decision fill:#00c9a7,color:#ffffff,stroke:#006d5b,stroke-width:3px;
+    classDef error fill:#ff3d71,color:#ffffff,stroke:#8b1e3f,stroke-width:2px;
+
+    %% Assign classes
+    class A start
+
     class B,C,D,E,H,K,L,M,N,P,Q,R,S,T,U,W,X,Y action
+
     class F,I,O,V decision
+
     class G,J error
+
 ```
