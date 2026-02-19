@@ -7,7 +7,7 @@
 ![Landing Page](images/screen.png)
 
 # Registration Page
-![RegisterPage](images\signup.png)
+![SignUp](images\signup.png)
 
 # Login Page
 ![Login Page](images\login.png)
