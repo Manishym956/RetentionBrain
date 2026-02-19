@@ -6,7 +6,7 @@ The platform transforms raw transactional data into actionable churn insights us
 
 ---
 
-## 🚀 Project Overview
+## Project Overview
 
 Businesses often lose customers without early warning. RetentionBrain addresses this problem by:
 
@@ -18,7 +18,7 @@ Businesses often lose customers without early warning. RetentionBrain addresses 
 
 ---
 
-## 🧠 Core Features
+## Core Features
 
 - Upload customer dataset (CSV)
 - Automated RFM feature engineering
@@ -31,7 +31,7 @@ Businesses often lose customers without early warning. RetentionBrain addresses 
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - Next.js
@@ -50,7 +50,7 @@ Businesses often lose customers without early warning. RetentionBrain addresses 
 
 ---
 
-## 📊 Machine Learning Approach
+## Machine Learning Approach
 
 ### 1️⃣ Data Processing
 - Removed missing CustomerID records
@@ -87,7 +87,7 @@ See detailed consumer flow here:
 ---
 
 ## 📂 Project Structure
-
+```
 RetentionBrain/
 │
 ├── notebooks/
@@ -101,7 +101,7 @@ RetentionBrain/
 ├── UserFlow.md
 ├── README.md
 └── requirements.txt
-
+```
 
 ---
 
