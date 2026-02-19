@@ -4,25 +4,31 @@
 [FigmaLink](https://www.figma.com/proto/XbheAf8V9E7yYFO3m8yPDv/Untitled?node-id=1-2&p=f&t=0fl0cLiKRSaLjSkG-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A2)
 
 # Landing Page
-![Landing Page](<wireframes/RetentionBrain - Public Landing Page.png>)
+![Landing Page](images/screen.png)
 
 # Registration Page
-![RegisterPage](wireframes/Register.png)
+![RegisterPage](images\signup.png)
 
 # Login Page
-![Login Page](wireframes/Login.png)
+![Login Page](images\login.png)
+
+# Forgot Password
+![Forgot Password](images\pass.png)
+
+# Profile Page
+![Profile](images\pfp.png)
 
 # Dataset Upload
-![Upload Dataset](<wireframes/Upload Dataset.png>)
+![Upload Dataset](<images\upload.png)
 
 # Processing
-![Processing](wireframes/Processing.png)
+![Processing](images\cs.png)
 
 # Dashboard
-![Dashboard](wireframes/Dashboard.png)
+![Dashboard](images\dash.png)
 
 # Customer Detail
-![CustomerDetail](<wireframes/Customer Detail.png>)
+![CustomerDetail](images\cs.png)
 
 # Dataset History
-![Dataset History](<wireframes/Dataset History.png>)
+![Dataset History](images\pred.png)
