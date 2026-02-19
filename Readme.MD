@@ -82,7 +82,7 @@ Businesses often lose customers without early warning. RetentionBrain addresses 
 
 See detailed consumer flow here:
 
-📄 [User Flow Diagram](./UserFlow.md)
+📄 [User Flow Diagram](UserFlow.MD)
 
 ---
 

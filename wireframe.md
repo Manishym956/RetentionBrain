@@ -19,7 +19,7 @@
 ![Profile](images\pfp.png)
 
 # Dataset Upload
-![Upload Dataset](<images\upload.png)
+![Upload Dataset](images\upload.png)
 
 # Processing
 ![Processing](images\cs.png)
