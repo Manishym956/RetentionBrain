@@ -1,6 +1,6 @@
 # RetentionBrain – Customer Churn Prediction Platform
 
-## WireFrame
+# WireFrame
 
 # Landing Page
 ![Landing Page](<wireframes/RetentionBrain - Public Landing Page.png>)
