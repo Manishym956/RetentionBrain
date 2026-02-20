@@ -1,6 +1,8 @@
 # Feature Breakdown
 https://docs.google.com/document/d/1jHJci9PdH8JLYhHAI7OY6XUb2nT7jFg-YwZUTfKgjhY/edit?usp=sharing
 
+# Deployment Plan
+https://docs.google.com/document/d/16XSB1VvFNlnWCXBBCko3tYPutLrzK3ljjqHx_vtMUow/edit?usp=sharing
 
 # HLD
 <img width="6777" height="3454" alt="image" src="https://github.com/user-attachments/assets/c7a7c854-2cdc-4eb2-a8f9-a4cd67fbf0aa" />
