@@ -18,4 +18,4 @@ https://docs.google.com/document/d/1jHJci9PdH8JLYhHAI7OY6XUb2nT7jFg-YwZUTfKgjhY/
 <img width="3392" height="5019" alt="image" src="https://github.com/user-attachments/assets/801f1b59-5f27-49d8-b5d7-6e0b8fcb0fc4" />
 
 # Deployment Plan
-<img width="3400" height="2372" alt="image" src="https://github.com/user-attachments/assets/756ac4a7-27a2-4d53-8a0f-22c640f4acad" />
+<img width="4253" height="3842" alt="image" src="https://github.com/user-attachments/assets/66dc9933-ea4a-4508-ba53-3975f0d8c235" />
