@@ -4,11 +4,15 @@ https://docs.google.com/document/d/1jHJci9PdH8JLYhHAI7OY6XUb2nT7jFg-YwZUTfKgjhY/
 # Deployment Plan
 https://docs.google.com/document/d/16XSB1VvFNlnWCXBBCko3tYPutLrzK3ljjqHx_vtMUow/edit?usp=sharing
 
+# LLD 
+https://docs.google.com/document/d/1LlLtQJqkAmidZXXsrTbaEql9meXZrSXRxK2vZGBtVV4/edit?usp=sharing
+
 # HLD
 <img width="6777" height="3454" alt="image" src="https://github.com/user-attachments/assets/c7a7c854-2cdc-4eb2-a8f9-a4cd67fbf0aa" />
 
 # LLD 
 ![LLD](images/RetentionBrain-LLD.png)
+<img width="8377" height="4011" alt="image" src="https://github.com/user-attachments/assets/3a46af17-0192-43a9-b684-a8f57d99bad9" />
 
 # Data Flow Diagram
 <img width="2976" height="2466" alt="image" src="https://github.com/user-attachments/assets/4418b1f5-3527-486c-b893-6286be1d9e19" />
