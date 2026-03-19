@@ -1,135 +1,96 @@
-# RetentionBrain – Customer Churn Prediction Platform
+# RetentionBrain Project Setup
 
-RetentionBrain is an end-to-end customer churn prediction system designed to help businesses proactively identify at-risk customers and take data-driven retention actions.
+Welcome to the RetentionBrain repository. This project contains a modern Next.js frontend (App Router) and a Django REST Framework backend designed for a clean, modular architecture ready for ML integration.
 
-The platform transforms raw transactional data into actionable churn insights using machine learning and behavioral analytics.
+## Project Structure
 
----
-
-## Project Overview
-
-Businesses often lose customers without early warning. RetentionBrain addresses this problem by:
-
-- Analyzing transactional purchase behavior
-- Generating churn probability scores
-- Segmenting customers into risk categories
-- Providing feature-level explanations
-- Enabling report downloads for business action
-
----
-
-## Core Features
-
-- Upload customer dataset (CSV)
-- Automated RFM feature engineering
-- Behavioral feature extraction
-- Churn prediction using XGBoost
-- Risk segmentation (Low / Medium / High)
-- Customer-level explanation
-- Interactive dashboard
-- Downloadable churn report (CSV)
-
----
-
-## Tech Stack
-
-### Frontend
-- Next.js
-- TailwindCSS
-- Recharts
-
-### Backend
-- Django REST Framework
-- PostgreSQL
-
-### Machine Learning
-- XGBoost
-- Pandas
-- NumPy
-- SHAP (Explainability)
-
----
-
-## Machine Learning Approach
-
-### 1️⃣ Data Processing
-- Removed missing CustomerID records
-- Converted InvoiceDate to datetime
-- Removed duplicates
-- Created TotalPrice feature
-
-### 2️⃣ Feature Engineering
-- Recency (excluded from model to prevent leakage)
-- Frequency
-- Monetary
-- Average Order Value
-- Return Ratio
-- Customer Lifetime
-
-### 3️⃣ Model Development
-- Stratified 70 / 15 / 15 split
-- Benchmarked XGBoost vs CatBoost
-- Multi-seed stability testing
-- Final model selected: XGBoost
-
-### 📈 Final Model Performance
-- Test ROC-AUC ≈ **0.81**
-- Stable across multiple random seeds
-
----
-
-## 🔄 User Flow
-
-See detailed consumer flow here:
-
-📄 [User Flow Diagram](UserFlow.MD)
-
----
-
-## 📂 Project Structure
 ```
 RetentionBrain/
-│
-├── notebooks/
-│ ├── EDA.ipynb
-│ ├── Model_Training.ipynb
-│
-├── backend/
-│
-├── frontend/
-│
-├── UserFlow.md
-├── README.md
-└── requirements.txt
+├── frontend/             # Next.js 14 (App Router, TailwindCSS, TypeScript)
+├── backend/              # Django REST Framework
+└── README.md             # This file
 ```
 
----
+## Prerequisites
 
-## ⚠️ Key Learning & Model Integrity
-
-During development, a data leakage issue was identified:
-
-- Churn was initially defined using Recency.
-- Including Recency as a feature led to artificially perfect performance.
-- The issue was resolved by removing Recency from model features.
-
-This ensured realistic and production-valid evaluation.
+- Node.js (v18+)
+- Python (3.10+)
 
 ---
 
-## 🔮 Future Improvements
+## 🏗️ Backend Setup (Django)
 
-- Time-based production validation
-- Survival analysis
-- LTV prediction
-- Async job processing
-- Role-based authentication
-- CRM integration
+1. Open a terminal and navigate to the backend folder:
+   ```bash
+   cd backend
+   ```
+
+2. Create and activate a virtual environment (Windows):
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\activate
+   ```
+   *(On macOS/Linux: `source venv/bin/activate`)*
+
+3. Install the required dependencies:
+   ```bash
+   pip install django djangorestframework djangorestframework-simplejwt django-cors-headers psycopg2-binary python-dotenv
+   ```
+   *(Note: The current configuration uses SQLite for rapid development. PostgreSQL and psycopg2 are ready when you decide to switch databases in `settings.py`)*
+
+4. Run the initial database migrations:
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+
+5. (Optional) Create a superuser to access the Django admin panel (`http://localhost:8000/admin/`):
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+6. Start the development server:
+   ```bash
+   python manage.py runserver
+   ```
+   The backend API will run on **http://localhost:8000**
+
+### Available Endpoints:
+- `POST /api/register/` - Register a new user
+- `POST /api/login/` - JWT Login (returns `access` and `refresh` tokens)
+- `POST /api/login/refresh/` - Refresh JWT token
+- `GET /api/health/` - Check if API is running
+- `POST /api/upload/` - Upload a CSV file (Requires JWT auth header)
 
 ---
 
-## 👨‍💻 Author
+## 🎨 Frontend Setup (Next.js)
 
-**Manish Y M**  
-Data Scientist Track – 2026  
-Customer Churn Prediction Project
+1. Open a new terminal and navigate to the frontend folder:
+   ```bash
+   cd frontend
+   ```
+
+2. Install the necessary NPM dependencies:
+   ```bash
+   npm install
+   ```
+   *(Axios and Lucide React icons are already configured)*
+
+3. Start the Next.js development server:
+   ```bash
+   npm run dev
+   ```
+   The frontend will run on **http://localhost:3000**
+
+### Frontend Features:
+- **Axios Configuration**: Pre-configured at `frontend/lib/axios.ts` to automatically attach JWT tokens from local storage.
+- **Routing**: Setup via Next App Router.
+   - `/` - Landing Page
+   - `/login` - Auth Page (Login/Registration Forms)
+   - `/dashboard` - Protected dashboard shell displaying metrics
+   - `/upload` - Protected CSV Upload page
+- **UI Components**: Check `frontend/components/ui/` for custom built components like `Button`, `Card`, and `Table`.
+
+## 🚀 What's Next?
+Currently, the upload API performs a mockup successful intake of CSV files while adhering to the initial project phase constraints. In Phase 2, the ML and SHAP integrations will be connected natively through the Django endpoints.
