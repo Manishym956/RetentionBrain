@@ -1,59 +1,106 @@
 "use client";
 import React, { useState } from 'react';
-import { UploadCloud } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from './ui/Button';
 import axios from '@/lib/axios';
+
+interface UploadResult {
+    message: string;
+    upload_id: number;
+    customers_processed: number;
+    high_risk_count: number;
+    avg_churn_probability: number;
+}
 
 export const FileUpload = () => {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
-    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [result, setResult] = useState<UploadResult | null>(null);
+    const router = useRouter();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setFile(e.target.files[0]);
+            setError('');
+            setResult(null);
         }
     };
 
     const handleUpload = async () => {
         if (!file) return;
         setUploading(true);
-        setMessage('');
+        setError('');
+        setResult(null);
         const formData = new FormData();
         formData.append('file', file);
         try {
             const res = await axios.post('/upload/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setMessage('Upload successful: ' + res.data.message);
+            setResult(res.data);
             setFile(null);
         } catch (err: any) {
-            setMessage('Upload failed: ' + (err.response?.data?.error || err.message));
+            setError(err.response?.data?.error || err.message);
         } finally {
             setUploading(false);
         }
     };
 
     return (
-        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
-            <UploadCloud className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Upload your Dataset</h3>
-            <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">
-                Select a CSV file containing your user retention data. The file should include relevant features for ML modeling.
-            </p>
-            <input 
-                type="file" 
-                accept=".csv"
-                onChange={handleFileChange}
-                className="block w-full max-w-xs text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-4 cursor-pointer"
-            />
-            <Button onClick={handleUpload} disabled={!file || uploading} className="w-full max-w-xs">
-                {uploading ? 'Uploading...' : 'Upload Data'}
-            </Button>
-            {message && (
-                <p className={`mt-4 text-sm font-medium ${message.includes('successful') ? 'text-green-600' : 'text-red-600'}`}>
-                    {message}
+        <div className="space-y-6">
+            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                <UploadCloud className="h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Upload your Dataset</h3>
+                <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">
+                    Select a CSV file containing your user retention data. The file will be processed through our ML pipeline.
                 </p>
+                <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileChange}
+                    className="block w-full max-w-xs text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-4 cursor-pointer"
+                />
+                <Button onClick={handleUpload} disabled={!file || uploading} className="w-full max-w-xs">
+                    {uploading ? 'Processing ML Pipeline...' : 'Upload & Analyze'}
+                </Button>
+            </div>
+
+            {error && (
+                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
+                    <div>
+                        <p className="text-sm font-medium text-red-800">Upload Failed</p>
+                        <p className="text-sm text-red-600 mt-1">{error}</p>
+                    </div>
+                </div>
+            )}
+
+            {result && (
+                <div className="p-6 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="flex items-center gap-2 mb-4">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <h4 className="font-semibold text-green-800">Analysis Complete</h4>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                        <div className="bg-white rounded-lg p-3 border border-green-100">
+                            <p className="text-xs text-gray-500">Customers Analyzed</p>
+                            <p className="text-xl font-bold text-gray-900">{result.customers_processed}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 border border-green-100">
+                            <p className="text-xs text-gray-500">High Risk</p>
+                            <p className="text-xl font-bold text-red-600">{result.high_risk_count}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 border border-green-100">
+                            <p className="text-xs text-gray-500">Avg Churn Risk</p>
+                            <p className="text-xl font-bold text-gray-900">{(result.avg_churn_probability * 100).toFixed(1)}%</p>
+                        </div>
+                    </div>
+                    <Button variant="secondary" onClick={() => router.push('/dashboard')} className="w-full">
+                        View Results in Dashboard
+                    </Button>
+                </div>
             )}
         </div>
     );

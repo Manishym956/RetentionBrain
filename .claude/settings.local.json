@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/Manishym/OneDrive/Desktop/RetentionBrain4/RetentionBrain/backend -type f -name *.py -o -name *.json -o -name *.txt -o -name *.md)",
+      "Bash(find /c/Users/Manishym/OneDrive/Desktop/RetentionBrain4/RetentionBrain/backend -type f \\\\\\(-name *.py -o -name *.json -o -name *.txt -o -name *.md \\\\\\) -not -path */venv/* -not -path */__pycache__/*)",
+      "Bash(find /c/Users/Manishym/OneDrive/Desktop/RetentionBrain4/RetentionBrain/frontend -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.json -o -name *.js -o -name *.md \\\\\\) -not -path */node_modules/* -not -path */.next/*)",
+      "Bash(ls \"C:\\\\Users\\\\Manishym\\\\OneDrive\\\\Desktop\\\\RetentionBrain4\\\\RetentionBrain\\\\frontend\\\\app\\\\\\(dashboard\\)\"\")",
+      "Bash(ls \"C:/Users/Manishym/OneDrive/Desktop/RetentionBrain4/RetentionBrain/frontend/app/\\(dashboard\\)/\")",
+      "Bash(source venv/Scripts/activate)",
+      "Bash(pip install:*)",
+      "Bash(python manage.py makemigrations api)",
+      "Bash(python manage.py migrate)",
+      "Bash(python -c \":*)",
+      "Bash(python manage.py check)",
+      "Bash(python manage.py shell -c \":*)",
+      "Bash(npx next:*)"
+    ]
+  }
+}
