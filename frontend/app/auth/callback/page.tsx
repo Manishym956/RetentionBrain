@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { GlassEffect } from '@/components/ui/liquid-glass';
 
-export default function OAuthCallbackPage() {
+import { Suspense } from 'react';
+
+function CallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [message, setMessage] = useState('Completing sign-in...');
@@ -35,18 +37,33 @@ export default function OAuthCallbackPage() {
     const hasError = message !== 'Completing sign-in...';
 
     return (
+        <GlassEffect className="max-w-md w-full rounded-2xl" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+            <div className="p-8 text-center">
+                <h1 className="text-2xl font-bold text-white mb-3">Google Sign-In</h1>
+                <p className="text-sm text-gray-300 mb-6">{message}</p>
+                {hasError && (
+                    <Link href="/auth/signin">
+                        <Button className="w-full">Return to Sign In</Button>
+                    </Link>
+                )}
+            </div>
+        </GlassEffect>
+    );
+}
+
+export default function OAuthCallbackPage() {
+    return (
         <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
-            <GlassEffect className="max-w-md w-full rounded-2xl" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
-                <div className="p-8 text-center">
-                    <h1 className="text-2xl font-bold text-white mb-3">Google Sign-In</h1>
-                    <p className="text-sm text-gray-300 mb-6">{message}</p>
-                    {hasError && (
-                        <Link href="/auth/signin">
-                            <Button className="w-full">Return to Sign In</Button>
-                        </Link>
-                    )}
-                </div>
-            </GlassEffect>
+            <Suspense fallback={
+                <GlassEffect className="max-w-md w-full rounded-2xl" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                    <div className="p-8 text-center">
+                        <p className="text-sm text-gray-300">Loading...</p>
+                    </div>
+                </GlassEffect>
+            }>
+                <CallbackContent />
+            </Suspense>
         </div>
     );
 }
+
