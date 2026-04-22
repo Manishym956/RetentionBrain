@@ -2,9 +2,45 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    full_name = models.CharField(max_length=255, blank=True, default='')
+    avatar_url = models.URLField(blank=True, default='')
+    email_notifications = models.BooleanField(default=True)
+    system_alerts = models.BooleanField(default=True)
+    theme = models.CharField(max_length=10, choices=[('light', 'Light'), ('dark', 'Dark')], default='light')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Profile: {self.user.username}"
+
+
+class Company(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='company')
+    name = models.CharField(max_length=255)
+    industry = models.CharField(max_length=100, blank=True, default='')
+    size = models.CharField(max_length=50, blank=True, default='', choices=[
+        ('1-10', '1-10'),
+        ('11-50', '11-50'),
+        ('51-200', '51-200'),
+        ('201-500', '201-500'),
+        ('501-1000', '501-1000'),
+        ('1000+', '1000+'),
+    ])
+    website = models.URLField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = 'companies'
+
+    def __str__(self):
+        return self.name
+
+
 class CSVUpload(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploads')
     file_name = models.CharField(max_length=255)
+    source_file = models.FileField(upload_to='uploads/%Y/%m/%d/', blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     row_count = models.IntegerField(default=0)
     status = models.CharField(max_length=20, choices=[

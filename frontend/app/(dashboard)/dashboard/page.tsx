@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Table, TableHeader, TableHead, TableRow, TableCell } from '@/components/ui/Table';
-import { Users, TrendingDown, Activity, DollarSign, AlertTriangle, Loader2 } from 'lucide-react';
+import { Users, TrendingDown, Activity, DollarSign, AlertTriangle, AlertCircle, Loader2 } from 'lucide-react';
 import api from '@/lib/axios';
 
 interface Metrics {
@@ -30,31 +30,44 @@ export default function DashboardPage() {
     const [metrics, setMetrics] = useState<Metrics | null>(null);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [riskFilter, setRiskFilter] = useState('');
 
     useEffect(() => {
-        fetchData();
-    }, [riskFilter]);
+        let cancelled = false;
 
-    const fetchData = async () => {
-        try {
-            const [metricsRes, customersRes] = await Promise.all([
-                api.get('/dashboard/'),
-                api.get('/customers/', {
-                    params: {
-                        page_size: 20,
-                        ...(riskFilter ? { risk: riskFilter } : {}),
-                    },
-                }),
-            ]);
-            setMetrics(metricsRes.data);
-            setCustomers(customersRes.data.results);
-        } catch {
-            console.error('Failed to fetch dashboard data');
-        } finally {
-            setLoading(false);
-        }
-    };
+        const fetchData = async () => {
+            setError('');
+            try {
+                const [metricsRes, customersRes] = await Promise.all([
+                    api.get('/dashboard/'),
+                    api.get('/customers/', {
+                        params: {
+                            page_size: 20,
+                            ...(riskFilter ? { risk: riskFilter } : {}),
+                        },
+                    }),
+                ]);
+                if (!cancelled) {
+                    setMetrics(metricsRes.data);
+                    setCustomers(customersRes.data.results);
+                }
+            } catch (err: any) {
+                if (!cancelled) {
+                    if (err.response?.status === 401) {
+                        setError('Session expired. Please log in again.');
+                    } else {
+                        setError(err.response?.data?.detail || err.message || 'Failed to load dashboard data.');
+                    }
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        fetchData();
+        return () => { cancelled = true; };
+    }, [riskFilter]);
 
     if (loading) {
         return (
@@ -73,7 +86,17 @@ export default function DashboardPage() {
                 <p className="text-gray-500 mt-1">High-level metrics and model predictions for your users.</p>
             </div>
 
-            {!hasData ? (
+            {error && (
+                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
+                    <div>
+                        <p className="text-sm font-medium text-red-800">Error loading dashboard</p>
+                        <p className="text-sm text-red-600 mt-0.5">{error}</p>
+                    </div>
+                </div>
+            )}
+
+            {!hasData && !error ? (
                 <Card className="bg-gradient-to-br from-blue-50 to-white">
                     <CardContent className="p-12 text-center">
                         <AlertTriangle className="h-12 w-12 text-blue-400 mx-auto mb-4" />

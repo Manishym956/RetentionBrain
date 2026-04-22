@@ -4,9 +4,14 @@ import numpy as np
 import pandas as pd
 import joblib
 import shap
+from django.conf import settings
 
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'xgboost_churn_model.pkl')
+MODEL_PATH = getattr(
+    settings,
+    "MODEL_PATH",
+    os.path.join(os.path.dirname(__file__), "xgboost_churn_model.pkl"),
+)
 
 # Features expected by the pre-trained model
 MODEL_FEATURES = ['Frequency', 'Monetary', 'AvgOrderValue', 'TotalReturns', 'ReturnRatio', 'CustomerLifetime']
@@ -22,7 +27,7 @@ def load_model():
 
 
 def parse_csv(file) -> pd.DataFrame:
-    content = file.read()
+    content = file.read() if hasattr(file, "read") else file
     if isinstance(content, bytes):
         content = content.decode('utf-8')
     df = pd.read_csv(io.StringIO(content))

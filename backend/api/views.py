@@ -1,20 +1,93 @@
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.db.models import Avg, Sum
 from rest_framework import generics, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.db.models import Avg, Count, Sum, Q
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import (
     UserSerializer, CustomerSerializer, CustomerDetailSerializer,
     CSVUploadSerializer, DashboardMetricsSerializer,
+    UserProfileSerializer, CompanySerializer,
 )
-from .models import Customer, CSVUpload
+from .models import Customer, CSVUpload, UserProfile, Company
 from .ml_service import parse_csv, compute_rfm_features, predict
+from .request_context import get_request_user
+
+
+OPEN_ACCESS_PERMISSIONS = [AllowAny] if settings.OPEN_ACCESS_MODE else [IsAuthenticated]
 
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+
+class UserProfileView(APIView):
+    permission_classes = OPEN_ACCESS_PERMISSIONS
+
+    def get(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=get_request_user(request))
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def put(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=get_request_user(request))
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class CompanyView(APIView):
+    permission_classes = OPEN_ACCESS_PERMISSIONS
+
+    def get(self, request):
+        actor = get_request_user(request)
+        try:
+            company = Company.objects.get(user=actor)
+            serializer = CompanySerializer(company)
+            return Response(serializer.data)
+        except Company.DoesNotExist:
+            return Response({"detail": "No company found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request):
+        actor = get_request_user(request)
+        company = Company.objects.filter(user=actor).first()
+        if company:
+            serializer = CompanySerializer(company, data=request.data, partial=True)
+        else:
+            serializer = CompanySerializer(data=request.data)
+            
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=actor)
+        return Response(serializer.data, status=status.HTTP_200_OK if company else status.HTTP_201_CREATED)
+
+    def put(self, request):
+        actor = get_request_user(request)
+        try:
+            company = Company.objects.get(user=actor)
+        except Company.DoesNotExist:
+            return Response({"detail": "No company found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CompanySerializer(company, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        # Mock: In production, send actual reset email
+        if User.objects.filter(email=email).exists():
+            return Response({"message": "If an account with that email exists, a reset link has been sent."})
+        return Response({"message": "If an account with that email exists, a reset link has been sent."})
 
 
 class HealthCheckView(APIView):
@@ -25,7 +98,8 @@ class HealthCheckView(APIView):
 
 
 class UploadCSVView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = OPEN_ACCESS_PERMISSIONS
+    throttle_scope = "upload"
 
     def post(self, request):
         file = request.FILES.get('file')
@@ -35,13 +109,17 @@ class UploadCSVView(APIView):
         if not file.name.endswith('.csv'):
             return Response({"error": "File must be a CSV"}, status=status.HTTP_400_BAD_REQUEST)
 
+        actor = get_request_user(request)
+        file_bytes = file.read()
+
         upload = CSVUpload.objects.create(
-            user=request.user,
+            user=actor,
             file_name=file.name,
+            source_file=ContentFile(file_bytes, name=file.name),
         )
 
         try:
-            df = parse_csv(file)
+            df = parse_csv(file_bytes)
             rfm = compute_rfm_features(df)
             results = predict(rfm)
 
@@ -49,7 +127,7 @@ class UploadCSVView(APIView):
             for _, row in results.iterrows():
                 customers.append(Customer(
                     upload=upload,
-                    user=request.user,
+                    user=actor,
                     customer_id=str(row.get('customer_id', '')),
                     recency=float(row.get('Recency', 0)),
                     frequency=float(row.get('Frequency', 0)),
@@ -97,10 +175,11 @@ class UploadCSVView(APIView):
 
 
 class DashboardMetricsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = OPEN_ACCESS_PERMISSIONS
 
     def get(self, request):
-        customers = Customer.objects.filter(user=request.user)
+        actor = get_request_user(request)
+        customers = Customer.objects.filter(user=actor)
 
         total = customers.count()
         if total == 0:
@@ -109,7 +188,7 @@ class DashboardMetricsView(APIView):
                 "avg_churn_risk": 0,
                 "high_risk_count": 0,
                 "revenue_at_risk": 0,
-                "total_uploads": CSVUpload.objects.filter(user=request.user).count(),
+                "total_uploads": CSVUpload.objects.filter(user=actor).count(),
                 "risk_distribution": {"low": 0, "medium": 0, "high": 0},
             })
 
@@ -131,16 +210,17 @@ class DashboardMetricsView(APIView):
             "avg_churn_risk": round(avg_churn * 100, 1),
             "high_risk_count": high_risk,
             "revenue_at_risk": round(high_risk_revenue, 2),
-            "total_uploads": CSVUpload.objects.filter(user=request.user).count(),
+            "total_uploads": CSVUpload.objects.filter(user=actor).count(),
             "risk_distribution": risk_dist,
         })
 
 
 class CustomerListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = OPEN_ACCESS_PERMISSIONS
 
     def get(self, request):
-        customers = Customer.objects.filter(user=request.user)
+        actor = get_request_user(request)
+        customers = Customer.objects.filter(user=actor)
 
         risk = request.query_params.get('risk')
         if risk in ('low', 'medium', 'high'):
@@ -177,11 +257,12 @@ class CustomerListView(APIView):
 
 
 class CustomerDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = OPEN_ACCESS_PERMISSIONS
 
     def get(self, request, pk):
+        actor = get_request_user(request)
         try:
-            customer = Customer.objects.get(pk=pk, user=request.user)
+            customer = Customer.objects.get(pk=pk, user=actor)
         except Customer.DoesNotExist:
             return Response({"error": "Customer not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -190,9 +271,9 @@ class CustomerDetailView(APIView):
 
 
 class UploadHistoryView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = OPEN_ACCESS_PERMISSIONS
 
     def get(self, request):
-        uploads = CSVUpload.objects.filter(user=request.user)
+        uploads = CSVUpload.objects.filter(user=get_request_user(request))
         serializer = CSVUploadSerializer(uploads, many=True)
         return Response(serializer.data)

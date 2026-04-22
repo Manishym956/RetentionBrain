@@ -4,8 +4,15 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
     return (
-        <div className={`bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden ${className}`} {...props}>
-            {children}
+        <div className={`bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden relative ${className}`} {...props}>
+            {/* Subtle glass shine overlay */}
+            <div
+                className="absolute inset-0 z-0 pointer-events-none rounded-xl"
+                style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%)',
+                }}
+            />
+            <div className="relative z-10">{children}</div>
         </div>
     );
 };
