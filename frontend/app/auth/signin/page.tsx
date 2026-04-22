@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { GlassEffect } from '@/components/ui/liquid-glass';
 import { Eye, EyeOff } from 'lucide-react';
 import api from '@/lib/axios';
+import { getGoogleAuthStartUrl } from '@/lib/auth';
 
 export default function SignInPage() {
     const [username, setUsername] = useState('');
@@ -14,6 +15,7 @@ export default function SignInPage() {
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -30,6 +32,11 @@ export default function SignInPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleGoogleSignIn = () => {
+        setGoogleLoading(true);
+        window.location.href = getGoogleAuthStartUrl('/dashboard');
     };
 
     return (
@@ -108,8 +115,14 @@ export default function SignInPage() {
 
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-                        <div className="relative flex justify-center" />
+                        <div className="relative flex justify-center">
+                            <span className="bg-transparent px-4 text-xs text-gray-500 uppercase tracking-wider">or continue with</span>
+                        </div>
                     </div>
+
+                    <Button type="button" variant="secondary" className="w-full" disabled={googleLoading} onClick={handleGoogleSignIn}>
+                        {googleLoading ? 'Redirecting to Google...' : 'Continue with Google'}
+                    </Button>
 
                     <p className="text-center text-sm text-gray-300">
                         Don&apos;t have an account?{' '}

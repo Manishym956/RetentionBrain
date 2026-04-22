@@ -35,6 +35,7 @@
   body {
     background-color: black;
     color: #111827;
+    font-family: "Segoe UI", "Helvetica Neue", "Arial Nova", sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

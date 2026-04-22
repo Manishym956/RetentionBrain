@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { GlassEffect } from '@/components/ui/liquid-glass';
 import { Eye, EyeOff, UserCircle } from 'lucide-react';
 import api from '@/lib/axios';
+import { getGoogleAuthStartUrl } from '@/lib/auth';
 
 export default function SignUpPage() {
     const [fullName, setFullName] = useState('');
@@ -15,6 +16,7 @@ export default function SignUpPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -55,6 +57,11 @@ export default function SignUpPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleGoogleSignUp = () => {
+        setGoogleLoading(true);
+        window.location.href = getGoogleAuthStartUrl('/onboarding/company');
     };
 
     const inputClass = "w-full rounded-lg border border-white/20 px-3.5 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-white/10 backdrop-blur-sm";
@@ -110,12 +117,22 @@ export default function SignUpPage() {
                         </Button>
                     </form>
 
+                    <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+                        <div className="relative flex justify-center">
+                            <span className="bg-transparent px-4 text-xs text-gray-500 uppercase tracking-wider">or continue with</span>
+                        </div>
+                    </div>
+
+                    <Button type="button" variant="secondary" className="w-full" disabled={googleLoading} onClick={handleGoogleSignUp}>
+                        {googleLoading ? 'Redirecting to Google...' : 'Continue with Google'}
+                    </Button>
+
                     <p className="text-xs text-center text-gray-400 mt-5 font-normal">
                         By signing up, you agree to our{' '}
                         <Link href="#" className="text-blue-400 hover:underline">Terms of Service</Link> and{' '}
                         <Link href="#" className="text-blue-400 hover:underline">Privacy Policy</Link>.
                     </p>
-
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
                         <div className="relative flex justify-center">

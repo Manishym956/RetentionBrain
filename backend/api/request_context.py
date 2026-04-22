@@ -7,7 +7,8 @@ from .models import UserProfile
 
 
 def get_request_user(request):
-    if request.user.is_authenticated:
+    request_user = getattr(request, "user", None)
+    if request_user is not None and request_user.is_authenticated:
         return request.user
 
     client_id = (

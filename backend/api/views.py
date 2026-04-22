@@ -1,16 +1,32 @@
+import json
+from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
+
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.core.mail import send_mail
+from django.core.signing import BadSignature, TimestampSigner
 from django.db.models import Avg, Sum
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
 
 from .serializers import (
     UserSerializer, CustomerSerializer, CustomerDetailSerializer,
     CSVUploadSerializer, DashboardMetricsSerializer,
     UserProfileSerializer, CompanySerializer,
+    EmailOrUsernameTokenObtainPairSerializer,
+    PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
 )
 from .models import Customer, CSVUpload, UserProfile, Company
 from .ml_service import parse_csv, compute_rfm_features, predict
@@ -18,6 +34,17 @@ from .request_context import get_request_user
 
 
 OPEN_ACCESS_PERMISSIONS = [AllowAny] if settings.OPEN_ACCESS_MODE else [IsAuthenticated]
+
+
+def build_frontend_url(path, **query_params):
+    base = settings.FRONTEND_URL.rstrip("/")
+    path = path if path.startswith("/") else f"/{path}"
+    query = urlencode({k: v for k, v in query_params.items() if v is not None})
+    return f"{base}{path}" + (f"?{query}" if query else "")
+
+
+class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EmailOrUsernameTokenObtainPairSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -81,20 +108,188 @@ class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
-        if not email:
-            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-        # Mock: In production, send actual reset email
-        if User.objects.filter(email=email).exists():
-            return Response({"message": "If an account with that email exists, a reset link has been sent."})
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+        user = User.objects.filter(email__iexact=email).first()
+
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = build_frontend_url(
+                settings.PASSWORD_RESET_FRONTEND_PATH,
+                uid=uid,
+                token=token,
+            )
+
+            send_mail(
+                subject="Reset your RetentionBrain password",
+                message=(
+                    "We received a request to reset your RetentionBrain password.\n\n"
+                    f"Open this link to continue:\n{reset_url}\n\n"
+                    "If you did not request this, you can ignore this email."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+            )
+
         return Response({"message": "If an account with that email exists, a reset link has been sent."})
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        uid = serializer.validated_data["uid"]
+        token = serializer.validated_data["token"]
+
+        try:
+            user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+            return Response({"error": "Invalid reset link."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "Reset link is invalid or expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data["password"])
+        user.save(update_fields=["password"])
+        return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
+
+
+class GoogleOAuthStartView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        if not settings.GOOGLE_OAUTH_ENABLED:
+            return Response({"error": "Google OAuth is not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        next_path = request.query_params.get("next", "/dashboard")
+        state = TimestampSigner().sign(next_path)
+        query = urlencode(
+            {
+                "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+                "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+                "response_type": "code",
+                "scope": " ".join(settings.GOOGLE_OAUTH_SCOPES),
+                "access_type": "offline",
+                "include_granted_scopes": "true",
+                "prompt": "consent",
+                "state": state,
+            }
+        )
+        return redirect(f"{settings.GOOGLE_OAUTH_AUTHORIZE_URL}?{query}")
+
+
+class GoogleOAuthCallbackView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        callback_path = "/auth/callback"
+        error = request.query_params.get("error")
+        if error:
+            return HttpResponseRedirect(build_frontend_url(callback_path, error=error))
+
+        code = request.query_params.get("code")
+        state = request.query_params.get("state", "")
+        if not code:
+            return HttpResponseRedirect(build_frontend_url(callback_path, error="missing_code"))
+
+        try:
+            next_path = TimestampSigner().unsign(state, max_age=600)
+        except BadSignature:
+            next_path = "/dashboard"
+
+        token_payload = urlencode(
+            {
+                "code": code,
+                "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+                "client_secret": settings.GOOGLE_OAUTH_CLIENT_SECRET,
+                "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,
+                "grant_type": "authorization_code",
+            }
+        ).encode("utf-8")
+        token_request = Request(
+            settings.GOOGLE_OAUTH_TOKEN_URL,
+            data=token_payload,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        try:
+            with urlopen(token_request, timeout=20) as token_response:
+                token_data = json.loads(token_response.read().decode("utf-8"))
+        except URLError:
+            return HttpResponseRedirect(build_frontend_url(callback_path, error="token_exchange_failed"))
+
+        access_token = token_data.get("access_token")
+        if not access_token:
+            return HttpResponseRedirect(build_frontend_url(callback_path, error="missing_access_token"))
+
+        try:
+            userinfo_request = Request(
+                settings.GOOGLE_OAUTH_USERINFO_URL,
+                headers={"Authorization": f"Bearer {access_token}"},
+                method="GET",
+            )
+            with urlopen(userinfo_request, timeout=20) as userinfo_response:
+                userinfo = json.loads(userinfo_response.read().decode("utf-8"))
+        except URLError:
+            return HttpResponseRedirect(build_frontend_url(callback_path, error="userinfo_failed"))
+        email = userinfo.get("email")
+        if not email:
+            return HttpResponseRedirect(build_frontend_url(callback_path, error="missing_email"))
+
+        user = User.objects.filter(email__iexact=email).first()
+        if user is None:
+            base_username = (email.split("@", 1)[0] or "googleuser").replace(" ", "").lower()
+            username = base_username
+            suffix = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{suffix}"
+                suffix += 1
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=userinfo.get("given_name", ""),
+                last_name=userinfo.get("family_name", ""),
+            )
+            user.set_unusable_password()
+            user.save(update_fields=["password"])
+
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.full_name = userinfo.get("name") or profile.full_name
+        profile.avatar_url = userinfo.get("picture") or profile.avatar_url
+        profile.save()
+
+        refresh = RefreshToken.for_user(user)
+        return HttpResponseRedirect(
+            build_frontend_url(
+                callback_path,
+                access=str(refresh.access_token),
+                refresh=str(refresh),
+                next=next_path,
+            )
+        )
 
 
 class HealthCheckView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        return Response({"status": "API running"}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "status": "API running",
+                "open_access_mode": settings.OPEN_ACCESS_MODE,
+                "google_oauth_enabled": settings.GOOGLE_OAUTH_ENABLED,
+                "gcs_storage_enabled": settings.USE_GCP_STORAGE,
+                "smtp_configured": bool(settings.EMAIL_HOST_USER),
+                "model_version": settings.MODEL_VERSION,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class UploadCSVView(APIView):

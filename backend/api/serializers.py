@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Customer, CSVUpload, UserProfile, Company
 
 
@@ -32,6 +33,18 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
         UserProfile.objects.create(user=user, full_name=full_name)
         return user
+
+
+class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = "username"
+
+    def validate(self, attrs):
+        identifier = attrs.get(self.username_field, "").strip()
+        if identifier and "@" in identifier:
+            user = User.objects.filter(email__iexact=identifier).first()
+            if user:
+                attrs[self.username_field] = user.username
+        return super().validate(attrs)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -109,3 +122,19 @@ class DashboardMetricsSerializer(serializers.Serializer):
     revenue_at_risk = serializers.FloatField()
     total_uploads = serializers.IntegerField()
     risk_distribution = serializers.DictField()
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs["password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError({"password": "Passwords do not match."})
+        return attrs

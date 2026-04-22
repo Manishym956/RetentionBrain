@@ -1,17 +1,22 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView, HealthCheckView, UploadCSVView,
     DashboardMetricsView, CustomerListView, CustomerDetailView,
     UploadHistoryView, UserProfileView, CompanyView, PasswordResetRequestView,
+    PasswordResetConfirmView, GoogleOAuthStartView, GoogleOAuthCallbackView,
+    EmailOrUsernameTokenObtainPairView,
 )
 
 urlpatterns = [
     # Auth
     path('register/', RegisterView.as_view(), name='register'),
-    path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('login/', EmailOrUsernameTokenObtainPairView.as_view(), name='login'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('auth/google/start/', GoogleOAuthStartView.as_view(), name='google_oauth_start'),
+    path('auth/google/callback/', GoogleOAuthCallbackView.as_view(), name='google_oauth_callback'),
     path('health/', HealthCheckView.as_view(), name='health'),
 
     # User
