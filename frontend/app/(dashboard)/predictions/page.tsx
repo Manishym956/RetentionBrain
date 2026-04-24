@@ -25,6 +25,7 @@ export default function PredictionsPage() {
     const [searchInput, setSearchInput] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [riskFilter, setRiskFilter] = useState('');
+    const [sort, setSort] = useState('-churn_probability');
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
     const pageSize = 10;
@@ -56,6 +57,7 @@ export default function PredictionsPage() {
                         page_size: pageSize,
                         ...(riskFilter ? { risk: riskFilter } : {}),
                         ...(debouncedSearch ? { search: debouncedSearch } : {}),
+                        ...(sort ? { sort } : {}),
                     },
                 });
                 if (!cancelled) {
@@ -77,7 +79,7 @@ export default function PredictionsPage() {
 
         fetchCustomers();
         return () => { cancelled = true; };
-    }, [page, riskFilter, debouncedSearch]);
+    }, [page, riskFilter, debouncedSearch, sort]);
 
     const totalPages = Math.ceil(total / pageSize);
 
@@ -109,6 +111,46 @@ export default function PredictionsPage() {
                 </div>
             </div>
         );
+    };
+
+    const handleExport = () => {
+        if (!customers || customers.length === 0) return;
+        import('jspdf').then(({ default: jsPDF }) => {
+            import('jspdf-autotable').then((autoTable) => {
+                const doc = new jsPDF();
+                
+                doc.setFontSize(18);
+                doc.text('RetentionBrain Prediction Report', 14, 22);
+                
+                doc.setFontSize(11);
+                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+                doc.text(`Total Records Extracted: ${customers.length}`, 14, 36);
+
+                const headers = [['CustomerID', 'Churn Probability', 'Risk Level', 'Recency', 'Frequency', 'Monetary']];
+                
+                const data = customers.map(c => [
+                    `#${c.customer_id}`,
+                    (c.churn_probability * 100).toFixed(1) + '%',
+                    c.risk_level.toUpperCase(),
+                    c.recency > 0 ? `${c.recency} days` : '-',
+                    c.frequency,
+                    `$${c.monetary.toFixed(2)}`
+                ]);
+
+                // @ts-ignore - jspdf-autotable types are sometimes tricky with dynamic imports
+                autoTable.default(doc, {
+                    startY: 45,
+                    head: headers,
+                    body: data,
+                    theme: 'grid',
+                    styles: { fontSize: 9 },
+                    headStyles: { fillColor: [37, 99, 235] }, // Blue-600
+                    alternateRowStyles: { fillColor: [249, 250, 251] }, // Gray-50
+                });
+
+                doc.save('predictions_report.pdf');
+            });
+        });
     };
 
     return (
@@ -149,9 +191,21 @@ export default function PredictionsPage() {
                         </button>
                     ))}
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm"><Filter className="w-4 h-4 mr-1.5" /> Filter</Button>
-                    <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-1.5" /> Export</Button>
+                <div className="flex gap-2 items-center">
+                    <div className="relative border border-gray-300 rounded-md text-sm bg-white overflow-hidden flex items-center">
+                        <Filter className="w-4 h-4 text-gray-500 ml-2" />
+                        <select 
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value)}
+                            className="bg-transparent border-none focus:ring-0 text-sm py-1.5 pl-2 pr-8 cursor-pointer outline-none text-gray-700"
+                        >
+                            <option value="-churn_probability">Highest Risk First</option>
+                            <option value="churn_probability">Lowest Risk First</option>
+                            <option value="-monetary">Highest Revenue</option>
+                            <option value="monetary">Lowest Revenue</option>
+                        </select>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleExport}><Download className="w-4 h-4 mr-1.5" /> Export</Button>
                 </div>
             </div>
 

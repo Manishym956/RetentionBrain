@@ -430,7 +430,8 @@ class CustomerListView(APIView):
 
         search = request.query_params.get('search')
         if search:
-            customers = customers.filter(customer_id__icontains=search)
+            search_term = search.strip().lstrip('#')
+            customers = customers.filter(customer_id__icontains=search_term)
 
         sort = request.query_params.get('sort', '-churn_probability')
         allowed_sorts = [
