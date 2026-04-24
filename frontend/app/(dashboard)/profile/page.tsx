@@ -293,7 +293,7 @@ export default function ProfilePage() {
                             </div>
                             <h4 className="text-lg font-bold text-white mb-1">RetentionBrain Pro</h4>
                             <p className="text-sm text-blue-100 mb-4">Unlock advanced neural network models and real-time streaming analytics.</p>
-                            <Button className="w-full bg-white text-blue-600 hover:bg-gray-100 font-semibold">
+                            <Button className="w-full bg-white !text-gray-900 hover:bg-gray-100 font-semibold">
                                 Upgrade Now
                             </Button>
                         </CardContent>

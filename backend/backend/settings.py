@@ -254,7 +254,15 @@ if USE_GCP_STORAGE:
     elif GCP_CREDENTIALS_JSON:
         credentials_path = BASE_DIR / "gcp-service-account.json"
         if not credentials_path.exists():
-            credentials_path.write_text(GCP_CREDENTIALS_JSON, encoding="utf-8")
+            import json
+            try:
+                # Try to load and re-dump to ensure it's valid JSON
+                creds_data = json.loads(GCP_CREDENTIALS_JSON, strict=False)
+                credentials_path.write_text(json.dumps(creds_data), encoding="utf-8")
+            except json.JSONDecodeError:
+                # Fallback: maybe it's just a raw string with \\n
+                fixed_json = GCP_CREDENTIALS_JSON.replace('\\n', '\n')
+                credentials_path.write_text(fixed_json, encoding="utf-8")
         os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", str(credentials_path))
 
     STORAGES = {
