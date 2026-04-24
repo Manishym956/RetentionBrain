@@ -185,6 +185,11 @@ if FRONTEND_URL and FRONTEND_URL not in cors_allowed_origins:
 CORS_ALLOWED_ORIGINS = cors_allowed_origins
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", ",".join(CORS_ALLOWED_ORIGINS))
 
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-retentionbrain-client-id",
+]
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
