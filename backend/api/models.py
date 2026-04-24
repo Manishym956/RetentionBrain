@@ -76,6 +76,12 @@ class Customer(models.Model):
         ('high', 'High'),
     ], default='low')
     top_features = models.JSONField(default=list, blank=True)
+    confidence = models.CharField(max_length=20, choices=[
+        ('high', 'High'),
+        ('moderate', 'Moderate'),
+        ('low', 'Low'),
+    ], default='high')
+    missing_features = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

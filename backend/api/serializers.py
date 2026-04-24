@@ -84,7 +84,7 @@ class CustomerSerializer(serializers.ModelSerializer):
             'id', 'customer_id', 'recency', 'frequency', 'monetary',
             'avg_order_value', 'total_returns', 'return_ratio',
             'customer_lifetime', 'churn_probability',
-            'is_churned', 'risk_level', 'top_features', 'created_at',
+            'is_churned', 'risk_level', 'top_features', 'confidence', 'missing_features', 'created_at',
         ]
 
 
@@ -97,7 +97,7 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
             'id', 'customer_id', 'recency', 'frequency', 'monetary',
             'avg_order_value', 'total_returns', 'return_ratio',
             'customer_lifetime', 'churn_probability',
-            'is_churned', 'risk_level', 'top_features', 'created_at',
+            'is_churned', 'risk_level', 'top_features', 'confidence', 'missing_features', 'created_at',
             'upload_name',
         ]
 

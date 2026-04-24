@@ -70,13 +70,7 @@ OPEN_ACCESS_MODE = env_bool("OPEN_ACCESS_MODE", True)
 ANONYMOUS_USER_PREFIX = os.getenv("ANONYMOUS_USER_PREFIX", "guest")
 MODEL_PATH = os.getenv("MODEL_PATH", str(BASE_DIR / "api" / "xgboost_churn_model.pkl"))
 MODEL_VERSION = os.getenv("MODEL_VERSION", "local")
-USE_GCP_STORAGE = env_bool("USE_GCP_STORAGE", False)
-GCP_BUCKET_NAME = os.getenv("GCP_BUCKET_NAME", "")
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "")
-GCP_CREDENTIALS_PATH = os.getenv("GCP_CREDENTIALS_PATH", "")
-GCP_CREDENTIALS_JSON = os.getenv("GCP_CREDENTIALS_JSON", "")
-GCP_SIGNED_URLS = env_bool("GCP_SIGNED_URLS", False)
-GCP_SIGNED_URL_EXPIRATION = env_int("GCP_SIGNED_URL_EXPIRATION", 900)
+# Removed GCP configurations
 PASSWORD_RESET_FRONTEND_PATH = os.getenv("PASSWORD_RESET_FRONTEND_PATH", "/auth/reset-password")
 
 
@@ -94,15 +88,7 @@ INSTALLED_APPS = [
 ]
 
 
-if USE_GCP_STORAGE:
-    try:
-        import storages  # noqa: F401
-    except ImportError as exc:  # pragma: no cover
-        raise RuntimeError(
-            "USE_GCP_STORAGE is enabled but django-storages/google-cloud-storage are not installed."
-        ) from exc
-
-    INSTALLED_APPS.append("storages")
+# Removed storages app
 
 
 MIDDLEWARE = [
@@ -248,38 +234,7 @@ SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", not DEBUG)
 CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", not DEBUG)
 
 
-if USE_GCP_STORAGE:
-    if GCP_CREDENTIALS_PATH:
-        os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", GCP_CREDENTIALS_PATH)
-    elif GCP_CREDENTIALS_JSON:
-        credentials_path = BASE_DIR / "gcp-service-account.json"
-        if not credentials_path.exists():
-            import json
-            try:
-                # Try to load and re-dump to ensure it's valid JSON
-                creds_data = json.loads(GCP_CREDENTIALS_JSON, strict=False)
-                credentials_path.write_text(json.dumps(creds_data), encoding="utf-8")
-            except json.JSONDecodeError:
-                # Fallback: maybe it's just a raw string with \\n
-                fixed_json = GCP_CREDENTIALS_JSON.replace('\\n', '\n')
-                credentials_path.write_text(fixed_json, encoding="utf-8")
-        os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", str(credentials_path))
-
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-        },
-    }
-    GS_BUCKET_NAME = GCP_BUCKET_NAME
-    GS_PROJECT_ID = GCP_PROJECT_ID or None
-    GS_DEFAULT_ACL = None
-    GS_FILE_OVERWRITE = False
-    GS_QUERYSTRING_AUTH = GCP_SIGNED_URLS
-    GS_EXPIRATION = GCP_SIGNED_URL_EXPIRATION
-    GS_LOCATION = os.getenv("GCP_LOCATION", "retentionbrain/")
+# Removed GCS STORAGES configuration
 
 
 LOGGING = {

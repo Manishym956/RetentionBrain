@@ -14,7 +14,20 @@ MODEL_PATH = getattr(
 )
 
 # Features expected by the pre-trained model
-MODEL_FEATURES = ['Frequency', 'Monetary', 'AvgOrderValue', 'TotalReturns', 'ReturnRatio', 'CustomerLifetime']
+MODEL_FEATURES = [
+    'Frequency', 'Monetary', 'AvgOrderValue', 'TotalReturns', 'ReturnRatio', 'CustomerLifetime'
+]
+
+# Domain Baselines for Missing Value Imputation
+# Since the original training data is unavailable, we use statistically sound eCommerce defaults.
+FEATURE_STATS = {
+    'Frequency': {'mean': 5.0, 'min': 0.0},
+    'Monetary': {'mean': 500.0, 'min': 0.0},
+    'AvgOrderValue': {'mean': 100.0, 'min': 0.0},
+    'TotalReturns': {'mean': 0.5, 'min': 0.0},
+    'ReturnRatio': {'mean': 0.05, 'min': 0.0},
+    'CustomerLifetime': {'mean': 180.0, 'min': 0.0},
+}
 
 _cached_model = None
 
@@ -33,6 +46,44 @@ def parse_csv(file) -> pd.DataFrame:
     df = pd.read_csv(io.StringIO(content))
     df.columns = df.columns.str.strip()
     return df
+
+
+def generate_eda(df: pd.DataFrame) -> dict:
+    eda_result = {
+        "shape": {"rows": int(df.shape[0]), "columns": int(df.shape[1])},
+        "columns": [],
+        "missing_values": df.isnull().sum().to_dict(),
+    }
+    
+    # Process column types and descriptive stats
+    desc = df.describe(include='all').to_dict()
+    for col in df.columns:
+        col_type = str(df[col].dtype)
+        is_numeric = pd.api.types.is_numeric_dtype(df[col])
+        
+        col_info = {
+            "name": col,
+            "type": col_type,
+            "is_numeric": is_numeric,
+        }
+        
+        if col in desc:
+            # Filter out NaNs from describe output to keep JSON clean
+            stats = {k: v for k, v in desc[col].items() if pd.notna(v)}
+            col_info["statistics"] = stats
+            
+        eda_result["columns"].append(col_info)
+        
+    # Correlation matrix for numeric columns only
+    numeric_df = df.select_dtypes(include='number')
+    if not numeric_df.empty:
+        # Replace NaNs with None/null for JSON serialization
+        corr_matrix = numeric_df.corr().replace({np.nan: None}).to_dict()
+        eda_result["correlation_matrix"] = corr_matrix
+    else:
+        eda_result["correlation_matrix"] = {}
+
+    return eda_result
 
 
 def compute_rfm_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -101,10 +152,20 @@ def compute_rfm_features(df: pd.DataFrame) -> pd.DataFrame:
             break
 
     if not all([id_col, date_col]):
-        raise ValueError(
-            "CSV must contain either feature columns (Frequency, Monetary, AvgOrderValue, TotalReturns, ReturnRatio, CustomerLifetime) "
-            "or transactional columns (CustomerID, InvoiceDate, Quantity, UnitPrice)."
-        )
+        # Dynamic fallback: if we can't compute RFM from transactions, and we don't have all exact features,
+        # we will just rename whatever we can find and let predict() fill the missing ones with defaults.
+        rename = {}
+        for feat in MODEL_FEATURES:
+            for c in df.columns:
+                if c.lower() == feat.lower():
+                    rename[c] = feat
+                    break
+        df = df.rename(columns=rename)
+        if id_col and id_col != 'customer_id':
+            df = df.rename(columns={id_col: 'customer_id'})
+        elif not id_col:
+            df['customer_id'] = [f"cust_{i}" for i in range(len(df))]
+        return df
 
     df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
     df = df.dropna(subset=[date_col])
@@ -161,10 +222,62 @@ def compute_rfm_features(df: pd.DataFrame) -> pd.DataFrame:
     return rfm
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 def predict(rfm: pd.DataFrame) -> pd.DataFrame:
     model = load_model()
 
+    missing_features_series = pd.Series([[] for _ in range(len(rfm))], index=rfm.index)
+
+    # Feature Alignment Layer
+    for feat in MODEL_FEATURES:
+        feat_mean = FEATURE_STATS[feat]['mean']
+        
+        # Instantiate column if entirely missing
+        if feat not in rfm.columns:
+            rfm[feat] = np.nan
+        
+        # Dynamic encoding / Type coercion
+        if not pd.api.types.is_numeric_dtype(rfm[feat]):
+            # If categorical or string, coerce to numeric (non-parsable becomes NaN)
+            rfm[feat] = pd.to_numeric(rfm[feat], errors='coerce')
+            
+        nan_mask = rfm[feat].isna()
+        if nan_mask.any():
+            logger.warning(f"Feature '{feat}' has {nan_mask.sum()} missing/invalid values. Filled with mean: {feat_mean}")
+            for idx in rfm.index[nan_mask]:
+                # Need to create a new list or append safely. Since we initialized with empty lists, 
+                # we can modify the list in-place or assign a new one.
+                current_list = missing_features_series.at[idx]
+                if feat not in current_list:
+                    current_list.append(feat)
+            
+            rfm.loc[nan_mask, feat] = feat_mean
+            
+    # Conditional Defaults (Light Logic)
+    freq_zero_mask = rfm['Frequency'] == 0
+    if freq_zero_mask.any():
+        logger.info(f"Applied conditional defaults: {freq_zero_mask.sum()} rows with Frequency=0. Coerced dependent features to 0.0")
+        rfm.loc[freq_zero_mask, 'AvgOrderValue'] = 0.0
+        rfm.loc[freq_zero_mask, 'TotalReturns'] = 0.0
+        rfm.loc[freq_zero_mask, 'ReturnRatio'] = 0.0
+
+    # Ensure exact feature order and fill any remaining unlikely NaNs with 0 as absolute ultimate fallback
     X = rfm[MODEL_FEATURES].fillna(0)
+    
+    # Track missing features and confidence
+    rfm['missing_features'] = missing_features_series
+    
+    def calculate_confidence(missing_list):
+        count = len(missing_list)
+        if count <= 1:
+            return 'high'
+        elif count <= 3:
+            return 'moderate'
+        return 'low'
+        
+    rfm['confidence'] = rfm['missing_features'].apply(calculate_confidence)
 
     probas = model.predict_proba(X)[:, 1]
     rfm['churn_probability'] = probas

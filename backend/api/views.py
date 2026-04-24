@@ -310,11 +310,15 @@ class UploadCSVView(APIView):
         upload = CSVUpload.objects.create(
             user=actor,
             file_name=file.name,
-            source_file=ContentFile(file_bytes, name=file.name),
         )
 
         try:
             df = parse_csv(file_bytes)
+            
+            # Generate EDA before modifying the dataframe structure for ML
+            from .ml_service import generate_eda
+            eda_json = generate_eda(df)
+            
             rfm = compute_rfm_features(df)
             results = predict(rfm)
 
@@ -335,6 +339,8 @@ class UploadCSVView(APIView):
                     is_churned=bool(row.get('is_churned', False)),
                     risk_level=row.get('risk_level', 'low'),
                     top_features=row.get('top_features', []),
+                    confidence=row.get('confidence', 'high'),
+                    missing_features=row.get('missing_features', []),
                 ))
 
             Customer.objects.bulk_create(customers)
@@ -352,6 +358,7 @@ class UploadCSVView(APIView):
                 "customers_processed": len(customers),
                 "high_risk_count": high_risk,
                 "avg_churn_probability": round(avg_churn, 4),
+                "eda": eda_json,
             }, status=status.HTTP_200_OK)
 
         except ValueError as e:
