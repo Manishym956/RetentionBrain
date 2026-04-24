@@ -2,7 +2,9 @@
 
 Welcome to the RetentionBrain repository. This project contains a modern Next.js frontend (App Router) and a Django REST Framework backend designed for a clean, modular architecture ready for ML integration.
 
-Deployed Link (https://retention-brain.vercel.app/)
+Frontend Link (https://retention-brain.vercel.app/)
+
+Backend Link (https://retentionbrain.onrender.com/)
 
 ## Project Structure
 
