@@ -27,8 +27,6 @@ export default function ProfilePage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [fullName, setFullName] = useState('');
-    const [emailNotifications, setEmailNotifications] = useState(true);
-    const [systemAlerts, setSystemAlerts] = useState(true);
     const { theme, setTheme } = useTheme();
     const [success, setSuccess] = useState('');
     const [toastMessage, setToastMessage] = useState('');
@@ -39,8 +37,6 @@ export default function ProfilePage() {
                 const res = await api.get('/profile/');
                 setProfile(res.data);
                 setFullName(res.data.full_name);
-                setEmailNotifications(res.data.email_notifications);
-                setSystemAlerts(res.data.system_alerts);
                 setTheme(res.data.theme);
             } catch (err: any) {
                 // 401 is handled globally by the axios interceptor (redirects to login)
@@ -60,8 +56,6 @@ export default function ProfilePage() {
         try {
             const res = await api.put('/profile/', {
                 full_name: fullName,
-                email_notifications: emailNotifications,
-                system_alerts: systemAlerts,
                 theme,
             });
             setProfile(res.data);
@@ -236,34 +230,7 @@ export default function ProfilePage() {
                     <Card>
                         <CardContent className="p-6">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-5">Preferences</h3>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Notifications</p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500">Receive weekly report digests</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setEmailNotifications(!emailNotifications)}
-                                        className={`relative w-11 h-6 rounded-full transition-colors ${emailNotifications ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}
-                                    >
-                                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${emailNotifications ? 'left-[22px]' : 'left-0.5'}`} />
-                                    </button>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">System Alerts</p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500">Critical model updates</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setSystemAlerts(!systemAlerts)}
-                                        className={`relative w-11 h-6 rounded-full transition-colors ${systemAlerts ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}
-                                    >
-                                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${systemAlerts ? 'left-[22px]' : 'left-0.5'}`} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-3">Appearance</p>
                                 <div className="flex gap-2">
                                     <button
