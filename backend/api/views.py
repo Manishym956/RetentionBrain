@@ -343,7 +343,7 @@ class UploadCSVView(APIView):
                     missing_features=row.get('missing_features', []),
                 ))
 
-            Customer.objects.bulk_create(customers)
+            Customer.objects.bulk_create(customers, batch_size=500)
 
             upload.row_count = len(customers)
             upload.status = 'completed'
