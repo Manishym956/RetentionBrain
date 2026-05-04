@@ -278,8 +278,8 @@ export default function ProfilePage() {
 
             {/* Toast Notification */}
             {toastMessage && (
-                <div className="fixed bottom-6 right-6 bg-gray-900 dark:bg-white text-gray-900 dark:text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-xl z-50 flex items-center gap-2 animate-in slide-in-from-bottom-5">
-                    <AlertCircle className="w-5 h-5" />
+                <div className="fixed bottom-6 right-6 bg-white border border-gray-200 text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-white px-6 py-3 rounded-lg shadow-xl z-50 flex items-center gap-2 animate-in slide-in-from-bottom-5">
+                    <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     <span className="font-medium">{toastMessage}</span>
                 </div>
             )}
