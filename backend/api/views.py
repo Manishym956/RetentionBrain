@@ -443,10 +443,20 @@ class CustomerListView(APIView):
         if sort in allowed_sorts:
             customers = customers.order_by(sort)
 
+        export_mode = request.query_params.get('export') == 'true'
+        total = customers.count()
+
+        if export_mode:
+            page_customers = customers[:10000]
+            serializer = CustomerSerializer(page_customers, many=True)
+            return Response({
+                "results": serializer.data,
+                "total": total,
+            })
+
         page_size = min(int(request.query_params.get('page_size', 50)), 200)
         page = int(request.query_params.get('page', 1))
         offset = (page - 1) * page_size
-        total = customers.count()
 
         page_customers = customers[offset:offset + page_size]
         serializer = CustomerSerializer(page_customers, many=True)

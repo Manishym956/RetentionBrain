@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { User, Upload, BarChart3, Clock, Loader2, Shield, AlertCircle } from 'lucide-react';
 import api from '@/lib/axios';
+import { useTheme } from 'next-themes';
 
 interface Profile {
     id: number;
@@ -28,8 +29,9 @@ export default function ProfilePage() {
     const [fullName, setFullName] = useState('');
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [systemAlerts, setSystemAlerts] = useState(true);
-    const [theme, setTheme] = useState('light');
+    const { theme, setTheme } = useTheme();
     const [success, setSuccess] = useState('');
+    const [toastMessage, setToastMessage] = useState('');
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -104,8 +106,8 @@ export default function ProfilePage() {
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Account Settings</h1>
-                <p className="text-gray-500 mt-1">Update your personal details and account preferences.</p>
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Account Settings</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Update your personal details and account preferences.</p>
             </div>
 
             {/* User Header */}
@@ -118,9 +120,9 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900">{fullName || profile.username}</h2>
-                            <p className="text-sm text-gray-500">{profile.email}</p>
-                            <p className="text-xs text-blue-600 mt-0.5">Member since {memberSince}</p>
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{fullName || profile.username}</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{profile.email}</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Member since {memberSince}</p>
                         </div>
                         <span className="ml-auto px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 uppercase tracking-wider">
                             Standard User
@@ -135,17 +137,17 @@ export default function ProfilePage() {
                     <CardContent className="p-5 flex items-center gap-4">
                         <div className="p-2.5 bg-blue-50 rounded-xl"><Upload className="w-5 h-5 text-blue-600" /></div>
                         <div>
-                            <p className="text-xs text-gray-500 uppercase tracking-wider">Datasets Uploaded</p>
-                            <p className="text-2xl font-bold text-gray-900">{profile.datasets_uploaded} <span className="text-sm font-normal text-gray-400">files</span></p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Datasets Uploaded</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{profile.datasets_uploaded} <span className="text-sm font-normal text-gray-400 dark:text-gray-500">files</span></p>
                         </div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-5 flex items-center gap-4">
-                        <div className="p-2.5 bg-gray-100 rounded-xl"><Clock className="w-5 h-5 text-gray-600" /></div>
+                        <div className="p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl"><Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" /></div>
                         <div>
-                            <p className="text-xs text-gray-500 uppercase tracking-wider">Last Login</p>
-                            <p className="text-2xl font-bold text-gray-900">{lastLogin}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Login</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{lastLogin}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -153,8 +155,8 @@ export default function ProfilePage() {
                     <CardContent className="p-5 flex items-center gap-4">
                         <div className="p-2.5 bg-indigo-50 rounded-xl"><BarChart3 className="w-5 h-5 text-indigo-600" /></div>
                         <div>
-                            <p className="text-xs text-gray-500 uppercase tracking-wider">Total Predictions</p>
-                            <p className="text-2xl font-bold text-gray-900">{profile.total_predictions.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Predictions</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{profile.total_predictions.toLocaleString()}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -165,34 +167,34 @@ export default function ProfilePage() {
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardContent className="p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-5">General Information</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-5">General Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name</label>
                                     <input
                                         type="text"
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email Address</label>
                                     <input
                                         type="email"
                                         value={profile.email}
                                         disabled
-                                        className="w-full rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
+                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 px-3.5 py-2.5 text-sm text-gray-400 bg-gray-50 dark:bg-gray-900 cursor-not-allowed"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="password"
                                             value="••••••••"
                                             disabled
-                                            className="flex-1 rounded-lg border border-gray-200 px-3.5 py-2.5 text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
+                                            className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 px-3.5 py-2.5 text-sm text-gray-400 bg-gray-50 dark:bg-gray-900 cursor-not-allowed"
                                         />
                                         <Button variant="outline" size="sm" className="shrink-0">Change</Button>
                                     </div>
@@ -218,10 +220,10 @@ export default function ProfilePage() {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-lg font-semibold text-red-600">Danger Zone</h3>
-                                    <p className="text-sm text-gray-500 mt-1">Permanently delete your account and all associated prediction data. This action cannot be undone.</p>
+                                    <h3 className="text-lg font-semibold text-red-600 dark:text-red-500">Danger Zone</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Permanently delete your account and all associated prediction data. This action cannot be undone.</p>
                                 </div>
-                                <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-50 shrink-0">
+                                <Button variant="outline" className="border-red-300 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0">
                                     Delete Account
                                 </Button>
                             </div>
@@ -233,41 +235,41 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                     <Card>
                         <CardContent className="p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-5">Preferences</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-5">Preferences</h3>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-700">Email Notifications</p>
-                                        <p className="text-xs text-gray-400">Receive weekly report digests</p>
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Notifications</p>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500">Receive weekly report digests</p>
                                     </div>
                                     <button
                                         onClick={() => setEmailNotifications(!emailNotifications)}
-                                        className={`relative w-11 h-6 rounded-full transition-colors ${emailNotifications ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                        className={`relative w-11 h-6 rounded-full transition-colors ${emailNotifications ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}
                                     >
                                         <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${emailNotifications ? 'left-[22px]' : 'left-0.5'}`} />
                                     </button>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-700">System Alerts</p>
-                                        <p className="text-xs text-gray-400">Critical model updates</p>
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">System Alerts</p>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500">Critical model updates</p>
                                     </div>
                                     <button
                                         onClick={() => setSystemAlerts(!systemAlerts)}
-                                        className={`relative w-11 h-6 rounded-full transition-colors ${systemAlerts ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                        className={`relative w-11 h-6 rounded-full transition-colors ${systemAlerts ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}
                                     >
                                         <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${systemAlerts ? 'left-[22px]' : 'left-0.5'}`} />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="mt-6 pt-4 border-t border-gray-100">
-                                <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-3">Appearance</p>
+                            <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-medium mb-3">Appearance</p>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setTheme('light')}
                                         className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-                                            theme === 'light' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                            theme === 'light' ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                                         }`}
                                     >
                                         Light
@@ -275,7 +277,7 @@ export default function ProfilePage() {
                                     <button
                                         onClick={() => setTheme('dark')}
                                         className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-                                            theme === 'dark' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                            theme === 'dark' ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                                         }`}
                                     >
                                         Dark
@@ -293,13 +295,27 @@ export default function ProfilePage() {
                             </div>
                             <h4 className="text-lg font-bold text-white mb-1">RetentionBrain Pro</h4>
                             <p className="text-sm text-blue-100 mb-4">Unlock advanced neural network models and real-time streaming analytics.</p>
-                            <Button className="w-full bg-white !text-gray-900 hover:bg-gray-100 font-semibold">
+                            <Button 
+                                className="w-full bg-white !text-gray-900 hover:bg-gray-100 font-semibold" 
+                                onClick={() => {
+                                    setToastMessage('Coming soon');
+                                    setTimeout(() => setToastMessage(''), 3000);
+                                }}
+                            >
                                 Upgrade Now
                             </Button>
                         </CardContent>
                     </Card>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            {toastMessage && (
+                <div className="fixed bottom-6 right-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-xl z-50 flex items-center gap-2 animate-in slide-in-from-bottom-5">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="font-medium">{toastMessage}</span>
+                </div>
+            )}
         </div>
     );
 }

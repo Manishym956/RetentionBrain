@@ -82,8 +82,8 @@ export default function DashboardPage() {
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard Overview</h1>
-                <p className="text-gray-500 mt-1">High-level metrics and model predictions for your users.</p>
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Dashboard Overview</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">High-level metrics and model predictions for your users.</p>
             </div>
 
             {error && (
@@ -97,11 +97,11 @@ export default function DashboardPage() {
             )}
 
             {!hasData && !error ? (
-                <Card className="bg-gradient-to-br from-blue-50 to-white">
+                <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-gray-800 dark:to-gray-900">
                     <CardContent className="p-12 text-center">
                         <AlertTriangle className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">No Data Yet</h3>
-                        <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No Data Yet</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                             Upload a CSV dataset to get started with churn predictions and retention analytics.
                         </p>
                         <Link href="/upload" className="inline-flex items-center justify-center rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 h-10 px-6 transition-colors">
@@ -112,43 +112,43 @@ export default function DashboardPage() {
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <Card className="bg-gradient-to-br from-white to-gray-50/50">
+                        <Card className="bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-gray-500">Total Customers</p>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Customers</p>
                                     <Users className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <p className="text-3xl font-bold text-gray-900 mt-4">{metrics!.total_customers.toLocaleString()}</p>
+                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-4">{metrics!.total_customers.toLocaleString()}</p>
                                 <p className="text-sm text-gray-400 font-normal mt-1">{metrics!.total_uploads} uploads processed</p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-gradient-to-br from-white to-gray-50/50">
+                        <Card className="bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-gray-500">Avg Churn Risk</p>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Churn Risk</p>
                                     <TrendingDown className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <p className="text-3xl font-bold text-gray-900 mt-4">{metrics!.avg_churn_risk}%</p>
-                                <p className="text-sm text-red-600 font-medium mt-1">{metrics!.high_risk_count} high risk</p>
+                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-4">{metrics!.avg_churn_risk}%</p>
+                                <p className="text-sm text-red-600 dark:text-red-500 font-medium mt-1">{metrics!.high_risk_count} high risk</p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-gradient-to-br from-white to-gray-50/50">
+                        <Card className="bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-gray-500">Revenue at Risk</p>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Revenue at Risk</p>
                                     <DollarSign className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <p className="text-3xl font-bold text-gray-900 mt-4">${metrics!.revenue_at_risk.toLocaleString()}</p>
-                                <p className="text-sm text-yellow-600 font-medium mt-1">From high-risk customers</p>
+                                <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-4">${metrics!.revenue_at_risk.toLocaleString()}</p>
+                                <p className="text-sm text-yellow-600 dark:text-yellow-500 font-medium mt-1">From high-risk customers</p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-gradient-to-br from-white to-gray-50/50">
+                        <Card className="bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-gray-500">Risk Distribution</p>
+                                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Risk Distribution</p>
                                     <Activity className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <div className="mt-4 space-y-2">
@@ -159,8 +159,8 @@ export default function DashboardPage() {
                                         return (
                                             <div key={level} className="flex items-center gap-2 text-sm">
                                                 <div className={`w-2 h-2 rounded-full ${colors[level]}`} />
-                                                <span className="capitalize text-gray-600">{level}</span>
-                                                <span className="ml-auto font-medium text-gray-900">{count} ({pct}%)</span>
+                                                <span className="capitalize text-gray-600 dark:text-gray-400">{level}</span>
+                                                <span className="ml-auto font-medium text-gray-900 dark:text-gray-100">{count} ({pct}%)</span>
                                             </div>
                                         );
                                     })}
@@ -181,7 +181,7 @@ export default function DashboardPage() {
                                             className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                                                 riskFilter === filter
                                                     ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                                             }`}
                                         >
                                             {filter === '' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -202,12 +202,12 @@ export default function DashboardPage() {
                                         <TableHead className="text-right">Churn Probability</TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                     {customers.map(c => {
                                         const riskColors = {
-                                            high: 'text-red-600',
-                                            medium: 'text-yellow-600',
-                                            low: 'text-green-600',
+                                            high: 'text-red-600 dark:text-red-500',
+                                            medium: 'text-yellow-600 dark:text-yellow-500',
+                                            low: 'text-green-600 dark:text-green-500',
                                         };
                                         return (
                                             <TableRow key={c.id}>
@@ -219,7 +219,7 @@ export default function DashboardPage() {
                                                 <TableCell>{c.recency} days</TableCell>
                                                 <TableCell>{c.frequency}</TableCell>
                                                 <TableCell>${c.monetary.toLocaleString()}</TableCell>
-                                                <TableCell className="text-sm text-gray-500">
+                                                <TableCell className="text-sm text-gray-500 dark:text-gray-400">
                                                     {c.top_features?.[0]?.feature || '-'}
                                                 </TableCell>
                                                 <TableCell className={`text-right font-semibold ${riskColors[c.risk_level as keyof typeof riskColors] || ''}`}>

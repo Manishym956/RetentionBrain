@@ -3,6 +3,7 @@ import './globals.css';
 import { Navbar } from '@/components/Navbar';
 import { ShaderBackground } from '@/components/ShaderBackground';
 import { GlassFilter } from '@/components/ui/liquid-glass';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'RetentionBrain',
@@ -15,12 +16,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <GlassFilter />
-        <ShaderBackground />
-        <Navbar />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <GlassFilter />
+          <ShaderBackground />
+          <Navbar />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

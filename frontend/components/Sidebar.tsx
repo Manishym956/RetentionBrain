@@ -43,7 +43,7 @@ export const Sidebar = () => {
     };
 
     return (
-        <aside className="w-64 border-r border-gray-200/80 bg-white/95 backdrop-blur-sm h-screen flex flex-col relative overflow-hidden">
+        <aside className="w-64 border-r border-gray-200/80 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm h-screen flex flex-col relative overflow-hidden">
             {/* Glass shine overlay */}
             <div
                 className="absolute inset-0 pointer-events-none z-0"
@@ -54,14 +54,14 @@ export const Sidebar = () => {
 
             <div className="relative z-10 flex flex-col h-full">
                 {/* Logo */}
-                <div className="px-5 py-5 border-b border-gray-100">
+                <div className="px-5 py-5 border-b border-gray-100 dark:border-gray-800">
                     <Link href="/dashboard" className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm shadow-blue-500/20">
                             <span className="text-white text-xs font-bold">RB</span>
                         </div>
                         <div>
-                            <span className="text-base font-bold text-gray-900">RetentionBrain</span>
-                            <p className="text-[10px] text-gray-400 -mt-0.5">Data Engine v2.0</p>
+                            <span className="text-base font-bold text-gray-900 dark:text-gray-100">RetentionBrain</span>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500 -mt-0.5">Data Engine v2.0</p>
                         </div>
                     </Link>
                 </div>
@@ -77,7 +77,7 @@ export const Sidebar = () => {
                                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-300 ${
                                     isActive
                                         ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/25'
-                                        : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:text-gray-900 dark:hover:text-gray-100'
                                 }`}
                             >
                                 <item.icon className="h-4 w-4" />
@@ -88,23 +88,23 @@ export const Sidebar = () => {
                 </div>
 
                 {/* User Section */}
-                <div className="border-t border-gray-100 p-3 space-y-1">
+                <div className="border-t border-gray-100 dark:border-gray-800 p-3 space-y-1">
                     {userName && (
                         <div className="flex items-center gap-3 px-3 py-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                <span className="text-xs font-bold text-blue-600">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
                                     {userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                                 </span>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-                                <p className="text-xs text-gray-400 truncate">{userEmail}</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{userName}</p>
+                                <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{userEmail}</p>
                             </div>
                         </div>
                     )}
                     <button
                         onClick={handleLogout}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100/80 hover:text-gray-700 transition-colors"
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                     >
                         <LogOut className="h-4 w-4" />
                         <span>Logout</span>

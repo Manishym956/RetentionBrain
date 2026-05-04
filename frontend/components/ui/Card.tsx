@@ -4,7 +4,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
     return (
-        <div className={`bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden relative ${className}`} {...props}>
+        <div className={`bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden relative ${className}`} {...props}>
             {/* Subtle glass shine overlay */}
             <div
                 className="absolute inset-0 z-0 pointer-events-none rounded-xl"
@@ -19,7 +19,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '', ...props }
 
 export const CardHeader: React.FC<CardProps> = ({ children, className = '', ...props }) => {
     return (
-        <div className={`px-6 py-4 border-b border-gray-200 ${className}`} {...props}>
+        <div className={`px-6 py-4 border-b border-gray-200 dark:border-gray-800 ${className}`} {...props}>
             {children}
         </div>
     );
@@ -27,7 +27,7 @@ export const CardHeader: React.FC<CardProps> = ({ children, className = '', ...p
 
 export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ children, className = '', ...props }) => {
     return (
-        <h3 className={`text-lg font-semibold text-gray-900 ${className}`} {...props}>
+        <h3 className={`text-lg font-semibold text-gray-900 dark:text-gray-100 ${className}`} {...props}>
             {children}
         </h3>
     );
