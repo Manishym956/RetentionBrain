@@ -132,7 +132,7 @@ export default function ProfilePage() {
                         <div className="p-2.5 bg-blue-50 rounded-xl"><Upload className="w-5 h-5 text-blue-600" /></div>
                         <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Datasets Uploaded</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{profile.datasets_uploaded} <span className="text-sm font-normal text-gray-400 dark:text-gray-500">files</span></p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{profile.datasets_uploaded} <span className="text-sm font-normal text-gray-500 dark:text-gray-400 dark:text-gray-500">files</span></p>
                         </div>
                     </CardContent>
                 </Card>
@@ -178,7 +178,7 @@ export default function ProfilePage() {
                                         type="email"
                                         value={profile.email}
                                         disabled
-                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 px-3.5 py-2.5 text-sm text-gray-400 bg-gray-50 dark:bg-gray-900 cursor-not-allowed"
+                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 px-3.5 py-2.5 text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 cursor-not-allowed"
                                     />
                                 </div>
                                 <div>
@@ -188,7 +188,7 @@ export default function ProfilePage() {
                                             type="password"
                                             value="••••••••"
                                             disabled
-                                            className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 px-3.5 py-2.5 text-sm text-gray-400 bg-gray-50 dark:bg-gray-900 cursor-not-allowed"
+                                            className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 px-3.5 py-2.5 text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 cursor-not-allowed"
                                         />
                                         <Button variant="outline" size="sm" className="shrink-0">Change</Button>
                                     </div>
@@ -258,9 +258,9 @@ export default function ProfilePage() {
                     <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 border-0">
                         <CardContent className="p-6 text-center">
                             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-3">
-                                <Shield className="w-5 h-5 text-white" />
+                                <Shield className="w-5 h-5 text-gray-900 dark:text-white" />
                             </div>
-                            <h4 className="text-lg font-bold text-white mb-1">RetentionBrain Pro</h4>
+                            <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">RetentionBrain Pro</h4>
                             <p className="text-sm text-blue-100 mb-4">Unlock advanced neural network models and real-time streaming analytics.</p>
                             <Button 
                                 className="w-full bg-white !text-gray-900 hover:bg-gray-100 font-semibold" 
@@ -278,7 +278,7 @@ export default function ProfilePage() {
 
             {/* Toast Notification */}
             {toastMessage && (
-                <div className="fixed bottom-6 right-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-xl z-50 flex items-center gap-2 animate-in slide-in-from-bottom-5">
+                <div className="fixed bottom-6 right-6 bg-gray-900 dark:bg-white text-gray-900 dark:text-white dark:text-gray-900 px-6 py-3 rounded-lg shadow-xl z-50 flex items-center gap-2 animate-in slide-in-from-bottom-5">
                     <AlertCircle className="w-5 h-5" />
                     <span className="font-medium">{toastMessage}</span>
                 </div>
